@@ -23,7 +23,7 @@ def mellowmax(values, omega = 1.0, axis = 1):
     return (torch.logsumexp(omega * values, axis=axis) - np.log(n)) / omega
 
 class Agent_MM():
-    def __init__(self, env):
+    def __init__(self, env, test = False):
         self.cuda = torch.device('cuda')
         print("Using device: " + torch.cuda.get_device_name(self.cuda), flush = True)
 
@@ -45,14 +45,13 @@ class Agent_MM():
         self.epsilon_decay = (self.epsilon - self.epsilon_min) / self.epsilon_period
 
         self.update_rate = 4
-        self.omega = 1
+        self.omega = 15
 
         self.start_epoch = 1
         self.epochs = 10
-        self.epoch = 1000
+        self.epoch = 10000
 
         self.model = DQN(self.state_shape, self.n_actions).to(self.cuda)
-        # self.model.load_state_dict(torch.load('model.pt'))
         print("DQN parameters: {}".format(count_parameters(self.model)))
 
         self.target = DQN(self.state_shape, self.n_actions).to(self.cuda)
@@ -60,6 +59,9 @@ class Agent_MM():
         self.target_update = 10000
 
         self.optimizer = optim.Adam(self.model.parameters(), lr = self.learning_rate)
+
+        if test:
+            self.model.load_state_dict(torch.load('model.pt'))
 
     def init_game_setting(self):
         pass
@@ -170,7 +172,7 @@ class Agent_MM():
             torch.save(self.model.state_dict(), 'model.pt')
             plt.clf()
             plt.plot(learn_curve)
-            plt.title("Epoch {}".format(epoch))
+            plt.title("MellowMax Epoch {}".format(epoch))
             plt.xlabel('Episodes')
             plt.ylabel('Moving Average Reward')
             plt.savefig("epoch{}.png".format(epoch))

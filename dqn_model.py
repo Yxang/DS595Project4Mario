@@ -11,10 +11,12 @@ class DQN(nn.Module):
             nn.Conv2d(4, 32, kernel_size = 8, stride = 4),
             nn.ReLU(),
             nn.Conv2d(32, 64, kernel_size = 4, stride = 2),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size = 3, stride = 1),
             nn.ReLU())
 
         self.lin = nn.Sequential(
-            nn.Linear(64 * 9 * 9, 512),
+            nn.Linear(64 * 7 * 7, 512),
             nn.ReLU(),
             nn.Linear(512, 512),
             nn.ReLU(),

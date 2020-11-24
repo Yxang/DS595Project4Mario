@@ -18,12 +18,8 @@ Transition = namedtuple('Transition',
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
-def mellowmax(values, omega = 1.0, axis = 1):
-    n = values.shape[axis]
-    return (torch.logsumexp(omega * values, axis=axis) - np.log(n)) / omega
-
 class Agent_DDQN():
-    def __init__(self, env):
+    def __init__(self, env, test = False):
         self.cuda = torch.device('cuda')
         print("Using device: " + torch.cuda.get_device_name(self.cuda), flush = True)
 
@@ -45,14 +41,12 @@ class Agent_DDQN():
         self.epsilon_decay = (self.epsilon - self.epsilon_min) / self.epsilon_period
 
         self.update_rate = 4
-        self.omega = 1
 
         self.start_epoch = 1
         self.epochs = 10
-        self.epoch = 1000
+        self.epoch = 10000
 
         self.model = DQN(self.state_shape, self.n_actions).to(self.cuda)
-        # self.model.load_state_dict(torch.load('model.pt'))
         print("DQN parameters: {}".format(count_parameters(self.model)))
 
         self.target = DQN(self.state_shape, self.n_actions).to(self.cuda)
@@ -60,6 +54,9 @@ class Agent_DDQN():
         self.target_update = 10000
 
         self.optimizer = optim.Adam(self.model.parameters(), lr = self.learning_rate)
+
+        if test:
+            self.model.load_state_dict(torch.load('model.pt'))
 
     def init_game_setting(self):
         pass
@@ -145,7 +142,6 @@ class Agent_DDQN():
                 ep_duration = 0
                 ep_reward = 0
                 while not done:
-                    self.env.env.render()
                     step += 1
                     ep_duration += 1
                     # get epsilon-greedy action
@@ -173,7 +169,7 @@ class Agent_DDQN():
             torch.save(self.model.state_dict(), 'model.pt')
             plt.clf()
             plt.plot(learn_curve)
-            plt.title("Epoch {}".format(epoch))
+            plt.title("DDQN Epoch {}".format(epoch))
             plt.xlabel('Episodes')
             plt.ylabel('Moving Average Reward')
             plt.savefig("epoch{}.png".format(epoch))
