@@ -34,12 +34,12 @@ class set_reward(Wrapper):
         state, reward, done, info = self.env.step(action)
         state = transfer_frame(state)
 
-        reward += (info["score"] - self.curr_score) / 40
-        self.curr_score = info["score"]
+        #reward += (info["score"] - self.curr_score) / 40
+        #self.curr_score = info["score"]
 
 
-        reward += max(info['x_pos'] - self.x_pos,0)
-        self.x_pos = info['x_pos']
+        #reward += max(info['x_pos'] - self.x_pos,0)
+        #self.x_pos = info['x_pos']
 
 
         if done:
@@ -63,16 +63,14 @@ class CustomState(Wrapper):
         self.skip = skip
 
     def step(self, action):
-        total_reward = 0
         states = []
         state, reward, done, info = self.env.step(action)
+        total_reward = reward
         for _ in range(self.skip):
+            states.append(state)
             if not done:
                 state, reward, done, info = self.env.step(action)
                 total_reward += reward
-                states.append(state)
-            else:
-                states.append(state)
         states = np.concatenate(states, 0)[None, :, :, :]
         return states.astype(np.float32), np.clip(total_reward,-15,15), done, info
 
