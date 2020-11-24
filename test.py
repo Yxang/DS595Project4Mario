@@ -19,5 +19,5 @@ for i in range(30):
         episode_reward += reward
 
     rewards.append(episode_reward)
-print('Run %d episodes'%(total_episodes))
+
 print('Mean:', np.mean(rewards))
