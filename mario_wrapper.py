@@ -34,7 +34,6 @@ class set_reward(Wrapper):
         state = transfer_frame(state)
 
         if self.type == "wrapper":
-            print("w")
             reward += (info["score"] - self.curr_score) / 40
             self.curr_score = info["score"]
 
@@ -49,7 +48,6 @@ class set_reward(Wrapper):
                     reward -= 50
 
         elif self.type == "sparse":
-            print("s")
             if info["flag_get"]:
                 reward = 50
 
