@@ -45,11 +45,11 @@ class Agent_MM():
         self.epsilon_decay = (self.epsilon - self.epsilon_min) / self.epsilon_period
 
         self.update_rate = 4
-        self.omega = 15
+        self.omega = 100
 
         self.start_epoch = 1
-        self.epochs = 10
-        self.epoch = 10000
+        self.epochs = 1
+        self.epoch = 20000
 
         self.model = DQN(self.state_shape, self.n_actions).to(self.cuda)
         print("DQN parameters: {}".format(count_parameters(self.model)))
