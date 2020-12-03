@@ -48,8 +48,12 @@ class set_reward(Wrapper):
                     reward -= 50
 
         elif self.type == "sparse":
-            if info["flag_get"]:
-                reward = 50
+            reward = info["score"]
+            if done:
+                if info["flag_get"]:
+                    reward += 50
+                else:
+                    reward -= 50
 
         return state, reward / 10., done, info
 
