@@ -11,6 +11,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 from dqn_model import DQN
+
 from PER import PriorityMemory
 
 Transition = namedtuple('Transition',
@@ -19,7 +20,7 @@ Transition = namedtuple('Transition',
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
-class Agent_DQN_PER():
+class Agent_DDQN_PER():
     def __init__(self, env, test = False):
         self.cuda = torch.device('cuda')
         print("Using device: " + torch.cuda.get_device_name(self.cuda), flush = True)
@@ -28,10 +29,9 @@ class Agent_DQN_PER():
         self.state_shape = env.observation_space.shape
         self.n_actions = env.action_space.n
 
-        #self.memory = deque(maxlen = 250000)
-        self.memory = PriorityMemory(250000)
+        self.memory = PriorityMemory(250000)# deque(maxlen = 250000)
         self.batch_size = 32
-        self.mem_threshold = 500#50000
+        self.mem_threshold = 50000
 
         self.gamma = 0.99
 
@@ -56,6 +56,7 @@ class Agent_DQN_PER():
         self.target_update = 10000
 
         self.optimizer = optim.Adam(self.model.parameters(), lr = self.learning_rate)
+
         if test:
             self.model.load_state_dict(torch.load('model.pt'))
 
@@ -106,10 +107,10 @@ class Agent_DQN_PER():
         states, actions, rewards, next_states, dones, indices = self.replay_buffer()
         # get Q(s,a) for sample
         Q = self.model(states).gather(1, actions.unsqueeze(-1)).squeeze(-1)
-
-        # get max_a' Q(s',a')
-        Q_prime = self.target(next_states).detach().max(1)[0]
-
+        # argmax_a' Q(s',a')
+        target_actions = self.model(next_states).detach().max(1)[1].unsqueeze(-1)
+        # prediction
+        Q_prime = self.target(next_states).gather(1, target_actions).squeeze(-1)
         # calculate y = r + gamma * max_a' Q(s',a') for non-terminal states
         Y = rewards + (self.gamma * Q_prime) * (1 - dones)
 
@@ -159,8 +160,7 @@ class Agent_DQN_PER():
                     next_state, reward, done, info = self.env.step(action)
                     ep_reward += reward
                     # add transition to replay memory
-                    #self.memory.append(Transition(state, action, reward, next_state, done))
-                    self.memory.add(abs(reward), Transition(state, action, reward, next_state, done)) #Will overwrite once full
+                    self.memory.add(abs(reward), Transition(state, action, reward, next_state, done))
                     state = next_state
                     # learn from experience, if available
                     if step % self.update_rate == 0 and self.memory.writes > self.mem_threshold:
@@ -179,7 +179,7 @@ class Agent_DQN_PER():
             torch.save(self.model.state_dict(), 'model.pt')
             plt.clf()
             plt.plot(learn_curve)
-            plt.title("DQN Epoch {}".format(epoch))
+            plt.title("DDQN Epoch {}".format(epoch))
             plt.xlabel('Episodes')
             plt.ylabel('Moving Average Reward')
             plt.savefig("epoch{}.png".format(epoch))
