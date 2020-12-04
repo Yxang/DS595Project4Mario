@@ -31,7 +31,7 @@ class Agent_DQN_PER():
         #self.memory = deque(maxlen = 250000)
         self.memory = PriorityMemory(250000)
         self.batch_size = 32
-        self.mem_threshold = 500#50000
+        self.mem_threshold = 50000
 
         self.gamma = 0.99
 
