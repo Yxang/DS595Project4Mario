@@ -18,6 +18,8 @@ class PriorityMemory:
     eps = 0.01                      #small constant to ensure non zero priority
     alpha = 0.6                     # Controls difference between high/low error
 
+    writes = 0                      # for keeping track of sample size for mem_threshold
+
     def __init__(self, capacity):
         self.tree = SumTree(capacity)
         self.capacity = capacity
@@ -28,6 +30,7 @@ class PriorityMemory:
     def add(self, error, sample):
         priority = self.get_priority(error)
         self.tree.add(priority, sample)
+        self.writes += 1
 
     def sample(self, n):
         batch = []
@@ -46,7 +49,7 @@ class PriorityMemory:
         return batch
 
     def update(self, indx, error):
-        priority = sel.get_priority(error)
+        priority = self.get_priority(error)
         self.tree.update(indx, priority)
 
 class SumTree:
