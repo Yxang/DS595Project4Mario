@@ -31,7 +31,7 @@ class Agent_MM():
         self.state_shape = env.observation_space.shape
         self.n_actions = env.action_space.n
 
-        self.memory = deque(maxlen = 250000)
+        self.memory = deque(maxlen = 100000)
         self.batch_size = 32
         self.mem_threshold = 50000
 
