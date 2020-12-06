@@ -9,12 +9,15 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
+import pickle
 
 from dqn_model import DQN
 from PER import PriorityMemory
 
 Transition = namedtuple('Transition',
                         ('state', 'action', 'reward', 'next_state', 'done'))
+
+save_prefix = "wrapper"
 
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -29,7 +32,7 @@ class Agent_DQN_PER():
         self.n_actions = env.action_space.n
 
         #self.memory = deque(maxlen = 250000)
-        self.memory = PriorityMemory(250000)
+        self.memory = PriorityMemory(100000)
         self.batch_size = 32
         self.mem_threshold = 50000
 
@@ -138,6 +141,7 @@ class Agent_DQN_PER():
         for epoch in range(self.start_epoch, self.epochs + 1):
             durations = []
             rewards = []
+            flag = []
             # progress bar
             epoch_bar = tqdm(range(self.epoch), total = self.epoch, ncols = 200)
             for episode in epoch_bar:
@@ -174,13 +178,18 @@ class Agent_DQN_PER():
                 rewards.append(ep_reward)
                 last30.append(ep_reward)
                 learn_curve.append(np.mean(last30))
+                flag.append(info['flag_get'])
                 epoch_bar.set_description("epoch {}/{}, avg duration = {:.2f}, avg reward = {:.2f}, last30 = {:2f}".format(epoch, self.epochs, np.mean(durations), np.mean(rewards), learn_curve[-1]))
             # save model every epoch
-            torch.save(self.model.state_dict(), 'model.pt')
             plt.clf()
             plt.plot(learn_curve)
-            plt.title("DQN Epoch {}".format(epoch))
+            plt.title(f"PER DQN Epoch {epoch} with {save_prefix} Reward")
             plt.xlabel('Episodes')
             plt.ylabel('Moving Average Reward')
-            plt.savefig("epoch{}.png".format(epoch))
+            if not os.path.exists(f"{save_prefix}_PER_DQN"):
+                os.mkdir(f"{save_prefix}_PER_DQN")
+            torch.save(self.model.state_dict(), f'{save_prefix}_PER_DQN/DQN_model_ep{epoch}.pt')
+            pickle.dump(rewards, open(f"{save_prefix}_PER_DQN/DQN_reward_ep{epoch}.pkl", 'wb'))
+            pickle.dump(flag, open(f"{save_prefix}_PER_DQN/flag_ep{epoch}.pkl", 'wb'))
+            plt.savefig(f"{save_prefix}_PER_DQN/epoch{epoch}.png")
             learn_curve = []
