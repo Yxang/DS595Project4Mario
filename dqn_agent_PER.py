@@ -17,7 +17,7 @@ from PER import PriorityMemory
 Transition = namedtuple('Transition',
                         ('state', 'action', 'reward', 'next_state', 'done'))
 
-save_prefix = "wrapper"
+save_prefix = "sparse"
 
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -60,7 +60,7 @@ class Agent_DQN_PER():
 
         self.optimizer = optim.Adam(self.model.parameters(), lr = self.learning_rate)
         if test:
-            self.model.load_state_dict(torch.load('model.pt'))
+            self.model.load_state_dict(torch.load('wrapper_PER_DQN/DQN_model_ep4.pt'))
 
     def init_game_setting(self):
         pass

@@ -16,7 +16,7 @@ from dqn_model import DQN
 Transition = namedtuple('Transition',
                         ('state', 'action', 'reward', 'next_state', 'done'))
 
-save_prefix = "wrapper"
+save_prefix = "sparse"
 
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
