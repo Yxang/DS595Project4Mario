@@ -18,7 +18,7 @@ from PER import PriorityMemory
 Transition = namedtuple('Transition',
                         ('state', 'action', 'reward', 'next_state', 'done'))
 
-save_prefix = "sparse"
+save_prefix = "default"
 
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -187,8 +187,8 @@ class Agent_DDQN_PER():
             plt.title("DDQN Epoch {}".format(epoch))
             plt.xlabel('Episodes')
             plt.ylabel('Moving Average Reward')
-            if not os.path.exists(f"{save_prefix}_DDQN"):
-                os.mkdir(f"{save_prefix}_DDQN")
+            if not os.path.exists(f"{save_prefix}_PER_DDQN"):
+                os.mkdir(f"{save_prefix}_PER_DDQN")
             torch.save(self.model.state_dict(), f'{save_prefix}_PER_DDQN/DDQN_model_ep{epoch}.pt')
             pickle.dump(rewards, open(f"{save_prefix}_PER_DDQN/DDQN_reward_ep{epoch}.pkl", 'wb'))
             pickle.dump(flag, open(f"{save_prefix}_PER_DDQN/flag_ep{epoch}.pkl", 'wb'))
