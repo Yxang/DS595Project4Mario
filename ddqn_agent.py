@@ -16,7 +16,7 @@ from dqn_model import DQN
 Transition = namedtuple('Transition',
                         ('state', 'action', 'reward', 'next_state', 'done'))
 
-save_prefix = "sparse"
+save_prefix = "default"
 
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -46,8 +46,8 @@ class Agent_DDQN():
         self.update_rate = 4
 
         self.start_epoch = 1
-        self.epochs = 10
-        self.epoch = 10000
+        self.epochs = 1
+        self.epoch = 20000
 
         self.model = DQN(self.state_shape, self.n_actions).to(self.cuda)
         print("DQN parameters: {}".format(count_parameters(self.model)))
